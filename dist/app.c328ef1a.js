@@ -123,17 +123,13 @@ var URL = 'https://api.hnpwa.com/v0/news/1.json';
 var CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json';
 var content = document.createElement("div");
 var container = document.getElementById("root");
-ajax.open('GET', URL, false);
-ajax.send();
-var newsFeed = JSON.parse(ajax.response);
+var newsFeed = getData(URL);
 var ul = document.createElement('ul');
 container.appendChild(ul);
 container.appendChild(content);
 window.addEventListener('hashchange', function () {
   var id = this.location.hash.substring(1);
-  ajax.open('GET', CONTENT_URL.replace('@id', id), false);
-  ajax.send();
-  var newsContent = JSON.parse(ajax.response);
+  var newsContent = getData(CONTENT_URL.replace('@id', id));
   var title = document.createElement('h1');
   content.appendChild(title);
   title.innerHTML = newsContent.title;
@@ -142,6 +138,11 @@ for (var i = 0; i < newsFeed.length; i++) {
   var div = document.createElement("div");
   div.innerHTML = "\n        <li>\n          <a href=\"#".concat(newsFeed[i].id, "\">\n          ").concat(newsFeed[i].title, "  ").concat(newsFeed[i].comments_count, "\n          </a\n        </li>\n    ");
   ul.appendChild(div.firstElementChild);
+}
+function getData(url) {
+  ajax.open('GET', url, false);
+  ajax.send();
+  return JSON.parse(ajax.response);
 }
 },{}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -168,7 +169,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55260" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59545" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
