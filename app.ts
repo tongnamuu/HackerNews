@@ -9,7 +9,7 @@ container!.appendChild(ul)
 container!.appendChild(content)
 
 
-type NewsCommon = {
+interface NewsCommon {
     id: number;
     time_ago: string;
     title: string;
@@ -18,22 +18,22 @@ type NewsCommon = {
     content: string
 }
 
-type NewsDetail = NewsCommon & {
+interface NewsDetail extends NewsCommon  {
     comments: NewsComment[];
 }
 
-type NewsComment = NewsCommon & {
+interface NewsComment extends NewsCommon {
     comments: NewsComment[];
     level: number;
 }
 
-type NewsFeed = NewsCommon & {
+interface NewsFeed extends NewsCommon {
     comments_count: number;
     points: number;
     read?: boolean
 }
 
-type Store = {
+interface Store {
     currentPage: number;
     feeds: NewsFeed[];
 }
