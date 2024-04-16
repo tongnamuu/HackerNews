@@ -1,11 +1,11 @@
 import { NewsFeedApi } from "../core/api"
 import View from "../core/view"
-import { NewsFeed } from "../types"
+import Store from "../store"
 
 export default class NewsFeedView extends View {
     private api: NewsFeedApi
-    private newsFeed: NewsFeed[]
-    constructor(containerId: string) {
+    private store: Store
+    constructor(containerId: string, store: Store) {
         let template = `
             <div class="container mx-auto p-4">
                 <h1>Hacker News</h1>
@@ -20,36 +20,30 @@ export default class NewsFeedView extends View {
         `
         super(containerId, template)
         this.api = new NewsFeedApi()
-        this.newsFeed = window.store.feeds
-        if (this.newsFeed.length === 0) {
-            this.newsFeed = window.store.feeds = this.api.getData()
-            this.makeFeeds();
+        this.store = store
+        if (this.store.feeds.length === 0) {
+            this.store.setFeeds(this.api.getData())
         }
     }
 
 
     render() {
-        window.store.currentPage = Number(location.hash.substring(7) || 1)
-        for (let i = (window.store.currentPage - 1) * 10; i < window.store.currentPage * 10; i++) {
+        this.store.currentPage = Number(location.hash.substring(7) || 1)
+        for (let i = (this.store.currentPage - 1) * 10; i < this.store.currentPage * 10; i++) {
+            const feed = this.store.feeds[i];
             this.addHtml(
                 `
-                <li class="${this.newsFeed[i].read ? 'bg-green-100' : 'bg-white'}">
-                <a href="#/show/${this.newsFeed[i].id}">
-                ${this.newsFeed[i].title}  ${this.newsFeed[i].comments_count}
+                <li class="${feed.read ? 'bg-green-100' : 'bg-white'}">
+                <a href="#/show/${feed.id}">
+                ${feed.title}  ${feed.comments_count}
                 </a
                 </li>
             `
             )
         }
         this.setTemplateData('{{__news_feed__}}', this.getHtml())
-        this.setTemplateData('{{__prev_page__}}', window.store.currentPage > 1 ? String(window.store.currentPage - 1) : String(1))
-        this.setTemplateData('{{__next_page__}}', window.store.currentPage * 10 >= this.newsFeed.length ? String(window.store.currentPage) : String(window.store.currentPage + 1))
+        this.setTemplateData('{{__prev_page__}}', String(this.store.getPrevPage))
+        this.setTemplateData('{{__next_page__}}', String(this.store.getNextPage))
         this.updateView()
-    }
-
-    private makeFeeds() {
-        for (let i = 0; i < this.newsFeed.length; i++) {
-            this.newsFeed[i].read = false
-        }
     }
 }

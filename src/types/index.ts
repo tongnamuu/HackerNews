@@ -24,11 +24,6 @@ export interface NewsFeed extends NewsCommon {
     read?: boolean
 }
 
-export interface Store {
-    currentPage: number;
-    feeds: NewsFeed[];
-}
-
 
 export interface RouterInfo {
     path: string;
