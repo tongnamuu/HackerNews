@@ -130,15 +130,15 @@ container.appendChild(content);
 window.addEventListener('hashchange', function () {
   var id = this.location.hash.substring(1);
   var newsContent = getData(CONTENT_URL.replace('@id', id));
-  var title = document.createElement('h1');
-  content.appendChild(title);
-  title.innerHTML = newsContent.title;
+  container.innerHTML = "\n      <h1>".concat(newsContent.title, "</h1>\n      <div>\n        <a href=\"#\">\uBAA9\uB85D\uC73C\uB85C</a>\n      </div>\n    ");
 });
+var newsList = [];
+newsList.push("<ul>");
 for (var i = 0; i < newsFeed.length; i++) {
-  var div = document.createElement("div");
-  div.innerHTML = "\n        <li>\n          <a href=\"#".concat(newsFeed[i].id, "\">\n          ").concat(newsFeed[i].title, "  ").concat(newsFeed[i].comments_count, "\n          </a\n        </li>\n    ");
-  ul.appendChild(div.firstElementChild);
+  newsList.push("\n        <li>\n          <a href=\"#".concat(newsFeed[i].id, "\">\n          ").concat(newsFeed[i].title, "  ").concat(newsFeed[i].comments_count, "\n          </a\n        </li>\n    "));
 }
+newsList.push("</ul>");
+container.innerHTML = newsList.join('');
 function getData(url) {
   ajax.open('GET', url, false);
   ajax.send();
