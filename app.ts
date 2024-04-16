@@ -1,5 +1,5 @@
 const ajax = new XMLHttpRequest();
-const URL = 'https://api.hnpwa.com/v0/news/1.json'
+const NEWS_FEED_URL = 'https://api.hnpwa.com/v0/news/1.json'
 const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json'
 const content = document.createElement("div")
 const container = document.getElementById("root")
@@ -29,7 +29,7 @@ function newsFeed() {
         </div>
     `
     if (newsFeed.length == 0) {
-        newsFeed = store.feeds = makeFeeds(getData(URL))
+        newsFeed = store.feeds = makeFeeds(getData(NEWS_FEED_URL))
     }
 
     for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
