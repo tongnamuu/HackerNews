@@ -9,11 +9,12 @@ container.appendChild(ul)
 container.appendChild(content)
 
 const store = {
-    currentPage: 1
+    currentPage: 1,
+    feeds: [],
 }
 
 function newsFeed() {
-    const newsFeed = getData(URL)
+    let newsFeed = store.feeds
     const newsList = []
     let template = `
         <div class="container mx-auto p-4">
@@ -27,12 +28,14 @@ function newsFeed() {
             </div>
         </div>
     `
-
+    if (newsFeed.length == 0) {
+        newsFeed = store.feeds = makeFeeds(getData(URL))
+    }
 
     for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
         newsList.push(
             `
-            <li>
+            <li class="${newsFeed[i].read ? 'bg-green-100' : 'bg-white'}">
             <a href="#/show/${newsFeed[i].id}">
             ${newsFeed[i].title}  ${newsFeed[i].comments_count}
             </a
@@ -44,6 +47,13 @@ function newsFeed() {
     template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage - 1 : 1)
     template = template.replace('{{__next_page__}}', store.currentPage * 10 >= newsFeed.length ? store.currentPage : store.currentPage + 1)
     container.innerHTML = template
+}
+
+function makeFeeds(feeds) {
+    for(let i=0;i<feeds.length;i++) {
+        feeds[i].read = false;
+    }
+    return feeds;
 }
 
 function newsContent() {
@@ -62,7 +72,12 @@ function newsContent() {
     </div>
 
   `;
-
+    for(let i=0;i<store.feeds.length;i++) {
+        if(store.feeds[i].id === Number(id)) {
+            store.feeds[i].read = true;
+            break
+        }
+    }  
     function makeComment(comments, depth) {
         const commentString = [];
         for (let i = 0; i < comments.length; i++) {

@@ -127,31 +127,47 @@ var ul = document.createElement('ul');
 container.appendChild(ul);
 container.appendChild(content);
 var store = {
-  currentPage: 1
+  currentPage: 1,
+  feeds: []
 };
 function newsFeed() {
-  var newsFeed = getData(URL);
+  var newsFeed = store.feeds;
   var newsList = [];
   var template = "\n        <div class=\"container mx-auto p-4\">\n            <h1>Hacker News</h1>\n            <ul>\n                {{__news_feed__}}\n            </ul>\n            <div>\n                <a href='#/page/{{__prev_page__}}'>\uC774\uC804\uD398\uC774\uC9C0</a>\n                <a href='#/page/{{__next_page__}}'>\uB2E4\uC74C\uD398\uC774\uC9C0</a>\n            </div>\n        </div>\n    ";
+  if (newsFeed.length == 0) {
+    newsFeed = store.feeds = makeFeeds(getData(URL));
+  }
   for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
-    newsList.push("\n            <li>\n            <a href=\"#/show/".concat(newsFeed[i].id, "\">\n            ").concat(newsFeed[i].title, "  ").concat(newsFeed[i].comments_count, "\n            </a\n            </li>\n        "));
+    newsList.push("\n            <li class=\"".concat(newsFeed[i].read ? 'bg-green-100' : 'bg-white', "\">\n            <a href=\"#/show/").concat(newsFeed[i].id, "\">\n            ").concat(newsFeed[i].title, "  ").concat(newsFeed[i].comments_count, "\n            </a\n            </li>\n        "));
   }
   template = template.replace('{{__news_feed__}}', newsList.join(''));
   template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage - 1 : 1);
   template = template.replace('{{__next_page__}}', store.currentPage * 10 >= newsFeed.length ? store.currentPage : store.currentPage + 1);
   container.innerHTML = template;
 }
+function makeFeeds(feeds) {
+  for (var i = 0; i < feeds.length; i++) {
+    feeds[i].read = false;
+  }
+  return feeds;
+}
 function newsContent() {
   var id = location.hash.substring(7);
   var newsContent = getData(CONTENT_URL.replace('@id', id));
   var template = "\n    <h1 class=\"text-red-400\">".concat(newsContent.title, "</h1>\n    <div>\n      ").concat(newsContent.content, "\n    </div>\n    {{__comments__}}\n\n    <div>\n      <a href=\"#/page/").concat(store.currentPage, "\">\uBAA9\uB85D\uC73C\uB85C</a>\n    </div>\n\n  ");
+  for (var i = 0; i < store.feeds.length; i++) {
+    if (store.feeds[i].id === Number(id)) {
+      store.feeds[i].read = true;
+      break;
+    }
+  }
   function makeComment(comments, depth) {
     var commentString = [];
-    for (var i = 0; i < comments.length; i++) {
-      commentString.push("\n            <div style=\"padding-left:".concat(depth * 40, "px;\">\n            <div class=\"text-gray-400\">\n              <strong>").concat(comments[i].user, "</strong>").concat(comments[i].time_ago, "\n            </div>\n            ").concat(comments[i].content, "\n            </div>\n            "));
-      console.log(comments[i].content);
-      if (comments[i].comments.length > 0) {
-        commentString.push(makeComment(comments[i].comments, depth + 1));
+    for (var _i = 0; _i < comments.length; _i++) {
+      commentString.push("\n            <div style=\"padding-left:".concat(depth * 40, "px;\">\n            <div class=\"text-gray-400\">\n              <strong>").concat(comments[_i].user, "</strong>").concat(comments[_i].time_ago, "\n            </div>\n            ").concat(comments[_i].content, "\n            </div>\n            "));
+      console.log(comments[_i].content);
+      if (comments[_i].comments.length > 0) {
+        commentString.push(makeComment(comments[_i].comments, depth + 1));
       }
     }
     return commentString.join('');
@@ -202,7 +218,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52288" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57484" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
