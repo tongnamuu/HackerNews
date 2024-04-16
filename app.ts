@@ -1,12 +1,5 @@
 const NEWS_FEED_URL: string = 'https://api.hnpwa.com/v0/news/1.json'
 const CONTENT_URL: string = 'https://api.hnpwa.com/v0/item/@id.json'
-const content: HTMLElement = document.createElement("div")
-const container: HTMLElement = document.getElementById("root")!
-
-const ul = document.createElement('ul');
-container!.appendChild(ul)
-container!.appendChild(content)
-
 
 interface NewsCommon {
     readonly id: number;
@@ -121,8 +114,8 @@ abstract class View {
 
 
 class NewsFeedView extends View {
-    api: NewsFeedApi
-    newsFeed: NewsFeed[]
+    private api: NewsFeedApi
+    private newsFeed: NewsFeed[]
     constructor(containerId: string) {
         let template = `
             <div class="container mx-auto p-4">
@@ -232,8 +225,8 @@ interface RouterInfo {
 }
 
 class Router {
-    routeTable: RouterInfo[]
-    defaultRoute: RouterInfo | null
+    private routeTable: RouterInfo[]
+    private defaultRoute: RouterInfo | null
     constructor() {
         const routePath = location.hash;
         window.addEventListener('hashchange', this.route.bind(this))
