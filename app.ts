@@ -1,4 +1,3 @@
-const ajax: XMLHttpRequest = new XMLHttpRequest();
 const NEWS_FEED_URL: string = 'https://api.hnpwa.com/v0/news/1.json'
 const CONTENT_URL: string = 'https://api.hnpwa.com/v0/item/@id.json'
 const content: HTMLElement = document.createElement("div")
@@ -10,11 +9,11 @@ container!.appendChild(content)
 
 
 interface NewsCommon {
-    id: number;
+    readonly id: number;
     time_ago: string;
-    title: string;
+    readonly title: string;
     url: string;
-    user: string;
+    readonly user: string;
     content: string
 }
 
@@ -44,6 +43,7 @@ const store: Store = {
 }
 
 function newsFeed() {
+    const api = new NewsFeedApi(NEWS_FEED_URL)
     let newsFeed: NewsFeed[] = store.feeds
     const newsList = []
     let template = `
@@ -59,7 +59,7 @@ function newsFeed() {
         </div>
     `
     if (newsFeed.length == 0) {
-        newsFeed = store.feeds = makeFeeds(getData<NewsFeed[]>(NEWS_FEED_URL))
+        newsFeed = store.feeds = makeFeeds(api.getData())
     }
 
     for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
@@ -88,7 +88,8 @@ function makeFeeds(feeds: NewsFeed[]): NewsFeed[] {
 
 function newsContent() {
     const id = location.hash.substring(7)
-    const newsContent = getData<NewsDetail>(CONTENT_URL.replace('@id', id))
+    const api = new NewsDetailApi(CONTENT_URL.replace('@id', id))
+    const newsContent = api.getData();
     let template =
         `
     <h1 class="text-red-400">${newsContent.title}</h1>
@@ -146,11 +147,33 @@ function router() {
     }
 }
 
-function getData<T>(url: string): T {
-    ajax.open('GET', url, false)
-    ajax.send()
-    return JSON.parse(ajax.response)
+class Api {
+    url: string
+    ajax: XMLHttpRequest
+    constructor(url: string) {
+        this.url = url
+        this.ajax = new XMLHttpRequest()
+    }
+
+    protected getRequest<AjaxResponse>(): AjaxResponse {
+        this.ajax.open('GET', this.url, false)
+        this.ajax.send()
+        return JSON.parse(this.ajax.response)
+    }
 }
+
+class NewsFeedApi extends Api {
+    getData(): NewsFeed[] {
+        return this.getRequest<NewsFeed[]>();
+    }
+}
+
+class NewsDetailApi extends Api {
+    getData(): NewsDetail {
+        return this.getRequest<NewsDetail>();
+    }
+}
+
 
 window.addEventListener('hashchange', router)
 router()
