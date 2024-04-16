@@ -43,7 +43,7 @@ const store: Store = {
 }
 
 function newsFeed() {
-    const api = new NewsFeedApi(NEWS_FEED_URL)
+    const api = new NewsFeedApi()
     let newsFeed: NewsFeed[] = store.feeds
     const newsList = []
     let template = `
@@ -85,11 +85,11 @@ function makeFeeds(feeds: NewsFeed[]): NewsFeed[] {
     }
     return feeds;
 }
-
+``
 function newsContent() {
     const id = location.hash.substring(7)
-    const api = new NewsDetailApi(CONTENT_URL.replace('@id', id))
-    const newsContent = api.getData();
+    const api = new NewsDetailApi()
+    const newsContent = api.getData(id);
     let template =
         `
     <h1 class="text-red-400">${newsContent.title}</h1>
@@ -148,32 +148,42 @@ function router() {
 }
 
 class Api {
-    url: string
-    ajax: XMLHttpRequest
-    constructor(url: string) {
-        this.url = url
-        this.ajax = new XMLHttpRequest()
-    }
-
-    protected getRequest<AjaxResponse>(): AjaxResponse {
-        this.ajax.open('GET', this.url, false)
-        this.ajax.send()
-        return JSON.parse(this.ajax.response)
+    getRequest<AjaxResponse>(url: string): AjaxResponse {
+        const ajax = new XMLHttpRequest()
+        ajax.open('GET', url, false)
+        ajax.send()
+        return JSON.parse(ajax.response)
     }
 }
 
-class NewsFeedApi extends Api {
+class NewsFeedApi {
     getData(): NewsFeed[] {
-        return this.getRequest<NewsFeed[]>();
+        return this.getRequest<NewsFeed[]>(NEWS_FEED_URL);
     }
 }
 
-class NewsDetailApi extends Api {
-    getData(): NewsDetail {
-        return this.getRequest<NewsDetail>();
+class NewsDetailApi {
+    getData(id: string): NewsDetail {
+        return this.getRequest<NewsDetail>(CONTENT_URL.replace('@id', id));
     }
 }
 
+function applyMixin(targetClass: any, baseClasses: any[]): void {
+    baseClasses.forEach(baseClass => {
+        Object.getOwnPropertyNames(baseClass.prototype).forEach(name => {
+            const descriptor = Object.getOwnPropertyDescriptor(baseClass.prototype, name)
+            if (descriptor) {
+                Object.defineProperty(targetClass.prototype, name, descriptor)
+            }
+        })
+    })
+}
+
+interface NewsFeedApi extends Api {}
+interface NewsDetailApi extends Api {}
+
+applyMixin(NewsFeedApi, [Api])
+applyMixin(NewsDetailApi, [Api])
 
 window.addEventListener('hashchange', router)
 router()
