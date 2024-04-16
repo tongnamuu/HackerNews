@@ -1,7 +1,8 @@
+import { CONTENT_URL } from "../config";
 import { NewsDetailApi } from "../core/api";
 import View from "../core/view";
 import Store from "../store";
-import { NewsComment } from "../types";
+import { NewsComment, NewsDetail } from "../types";
 
 export default class NewsDetailView extends View {
     private store: Store
@@ -23,21 +24,19 @@ export default class NewsDetailView extends View {
         this.store = store
     }
 
-    render() {
+    async render(): Promise<void> {
         const id = location.hash.substring(7)
-        const api = new NewsDetailApi()
-        const newsContent = api.getData(id);
-        for (let i = 0; i < this.store.numberOfFeed; i++) {
-            if (this.store.feeds[i].id === Number(id)) {
-                this.store.makeRead(i)
-                break
-            }
-        }
-        this.setTemplateData('{{__comments__}}', this.makeComment(newsContent.comments, 1))
-        this.setTemplateData('{{__newsContent__title__}}', newsContent.title)
-        this.setTemplateData('{{__newsContent__content__}}', newsContent.content)
+        const api = new NewsDetailApi(CONTENT_URL.replace('@id', id))
+        const { title, content, comments } = await api.getData()
+
+        this.store.makeRead(Number(id))
+        this.setTemplateData('{{__comments__}}', this.makeComment(comments, 1))
+        this.setTemplateData('{{__newsContent__title__}}', title)
+        this.setTemplateData('{{__newsContent__content__}}', content)
         this.setTemplateData('{{__store__currentPage__}}', String(this.store.currentPage))
-        this.updateView();
+        this.updateView()
+
+
     }
 
     private makeComment(comments: NewsComment[], depth: number): string {
