@@ -145,17 +145,18 @@ function newsContent() {
   var id = location.hash.substring(7);
   var newsContent = getData(CONTENT_URL.replace('@id', id));
   var template = "\n    <h1 class=\"text-red-400\">".concat(newsContent.title, "</h1>\n    <div>\n      ").concat(newsContent.content, "\n    </div>\n    {{__comments__}}\n\n    <div>\n      <a href=\"#/page/").concat(store.currentPage, "\">\uBAA9\uB85D\uC73C\uB85C</a>\n    </div>\n\n  ");
-  function makeComment(comments) {
+  function makeComment(comments, depth) {
     var commentString = [];
     for (var i = 0; i < comments.length; i++) {
-      commentString.push("\n            <div class=\"text-gray-400>\n              <strong>".concat(comments[i].user, "</strong>").concat(comments[i].time_ago, "\n            </div>\n            <p class=\"text-gray-700>").concat(comments[i].content, "</p>\n            "));
+      commentString.push("\n            <div style=\"padding-left:".concat(depth * 40, "px;\">\n            <div class=\"text-gray-400\">\n              <strong>").concat(comments[i].user, "</strong>").concat(comments[i].time_ago, "\n            </div>\n            ").concat(comments[i].content, "\n            </div>\n            "));
+      console.log(comments[i].content);
       if (comments[i].comments.length > 0) {
-        commentString.push(makeComment(comments[i].comments));
+        commentString.push(makeComment(comments[i].comments, depth + 1));
       }
     }
     return commentString.join('');
   }
-  template = template.replace('{{__comments__}}', makeComment(newsContent.comments));
+  template = template.replace('{{__comments__}}', makeComment(newsContent.comments, 1));
   container.innerHTML = template;
 }
 function router() {
@@ -201,7 +202,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50348" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52288" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

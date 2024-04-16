@@ -63,23 +63,26 @@ function newsContent() {
 
   `;
 
-    function makeComment(comments) {
+    function makeComment(comments, depth) {
         const commentString = [];
         for (let i = 0; i < comments.length; i++) {
             commentString.push(`
-            <div class="text-gray-400>
+            <div style="padding-left:${depth * 40}px;">
+            <div class="text-gray-400">
               <strong>${comments[i].user}</strong>${comments[i].time_ago}
             </div>
-            <p class="text-gray-700>${comments[i].content}</p>
+            ${comments[i].content}
+            </div>
             `)
+            console.log(comments[i].content)
             if(comments[i].comments.length > 0) {
-                commentString.push(makeComment(comments[i].comments))
+                commentString.push(makeComment(comments[i].comments, depth+1))
             }
         }
         return commentString.join('')
     }
 
-    template = template.replace('{{__comments__}}', makeComment(newsContent.comments))
+    template = template.replace('{{__comments__}}', makeComment(newsContent.comments, 1))
 
     container.innerHTML = template
 
