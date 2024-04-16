@@ -1,20 +1,50 @@
-const ajax = new XMLHttpRequest();
-const NEWS_FEED_URL = 'https://api.hnpwa.com/v0/news/1.json'
-const CONTENT_URL = 'https://api.hnpwa.com/v0/item/@id.json'
-const content = document.createElement("div")
-const container = document.getElementById("root")
+const ajax: XMLHttpRequest = new XMLHttpRequest();
+const NEWS_FEED_URL: string = 'https://api.hnpwa.com/v0/news/1.json'
+const CONTENT_URL: string = 'https://api.hnpwa.com/v0/item/@id.json'
+const content: HTMLElement = document.createElement("div")
+const container: HTMLElement = document.getElementById("root")!
 
 const ul = document.createElement('ul');
-container.appendChild(ul)
-container.appendChild(content)
+container!.appendChild(ul)
+container!.appendChild(content)
 
-const store = {
+
+type NewsCommon = {
+    id: number;
+    time_ago: string;
+    title: string;
+    url: string;
+    user: string;
+    content: string
+}
+
+type NewsDetail = NewsCommon & {
+    comments: NewsComment[];
+}
+
+type NewsComment = NewsCommon & {
+    comments: NewsComment[];
+    level: number;
+}
+
+type NewsFeed = NewsCommon & {
+    comments_count: number;
+    points: number;
+    read?: boolean
+}
+
+type Store = {
+    currentPage: number;
+    feeds: NewsFeed[];
+}
+
+const store: Store = {
     currentPage: 1,
     feeds: [],
 }
 
 function newsFeed() {
-    let newsFeed = store.feeds
+    let newsFeed: NewsFeed[] = store.feeds
     const newsList = []
     let template = `
         <div class="container mx-auto p-4">
@@ -29,7 +59,7 @@ function newsFeed() {
         </div>
     `
     if (newsFeed.length == 0) {
-        newsFeed = store.feeds = makeFeeds(getData(NEWS_FEED_URL))
+        newsFeed = store.feeds = makeFeeds(getData<NewsFeed[]>(NEWS_FEED_URL))
     }
 
     for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
@@ -44,12 +74,12 @@ function newsFeed() {
         )
     }
     template = template.replace('{{__news_feed__}}', newsList.join(''))
-    template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage - 1 : 1)
-    template = template.replace('{{__next_page__}}', store.currentPage * 10 >= newsFeed.length ? store.currentPage : store.currentPage + 1)
+    template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? String(store.currentPage - 1) : String(1))
+    template = template.replace('{{__next_page__}}', store.currentPage * 10 >= newsFeed.length ? String(store.currentPage) : String(store.currentPage + 1))
     container.innerHTML = template
 }
 
-function makeFeeds(feeds) {
+function makeFeeds(feeds: NewsFeed[]): NewsFeed[] {
     for(let i=0;i<feeds.length;i++) {
         feeds[i].read = false;
     }
@@ -58,7 +88,7 @@ function makeFeeds(feeds) {
 
 function newsContent() {
     const id = location.hash.substring(7)
-    const newsContent = getData(CONTENT_URL.replace('@id', id))
+    const newsContent = getData<NewsDetail>(CONTENT_URL.replace('@id', id))
     let template =
         `
     <h1 class="text-red-400">${newsContent.title}</h1>
@@ -78,29 +108,29 @@ function newsContent() {
             break
         }
     }  
-    function makeComment(comments, depth) {
-        const commentString = [];
-        for (let i = 0; i < comments.length; i++) {
-            commentString.push(`
-            <div style="padding-left:${depth * 40}px;">
-            <div class="text-gray-400">
-              <strong>${comments[i].user}</strong>${comments[i].time_ago}
-            </div>
-            ${comments[i].content}
-            </div>
-            `)
-            console.log(comments[i].content)
-            if(comments[i].comments.length > 0) {
-                commentString.push(makeComment(comments[i].comments, depth+1))
-            }
-        }
-        return commentString.join('')
-    }
-
     template = template.replace('{{__comments__}}', makeComment(newsContent.comments, 1))
 
     container.innerHTML = template
 
+}
+
+function makeComment(comments: NewsComment[], depth: number): string {
+    const commentString = [];
+    for (let i = 0; i < comments.length; i++) {
+        commentString.push(`
+        <div style="padding-left:${depth * 40}px;">
+        <div class="text-gray-400">
+          <strong>${comments[i].user}</strong>${comments[i].time_ago}
+        </div>
+        ${comments[i].content}
+        </div>
+        `)
+        console.log(comments[i].content)
+        if(comments[i].comments.length > 0) {
+            commentString.push(makeComment(comments[i].comments, depth+1))
+        }
+    }
+    return commentString.join('')
 }
 
 function router() {
@@ -116,7 +146,7 @@ function router() {
     }
 }
 
-function getData(url) {
+function getData<T>(url: string): T {
     ajax.open('GET', url, false)
     ajax.send()
     return JSON.parse(ajax.response)
