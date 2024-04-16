@@ -132,9 +132,9 @@ var store = {
 function newsFeed() {
   var newsFeed = getData(URL);
   var newsList = [];
-  var template = "\n        <div>\n            <h1>Hacker News</h1>\n            <ul>\n                {{__news_feed__}}\n            </ul>\n            <div>\n                <a href='#/page/{{__prev_page__}}'>\uC774\uC804\uD398\uC774\uC9C0</a>\n                <a href='#/page/{{__next_page__}}'>\uB2E4\uC74C\uD398\uC774\uC9C0</a>\n            </div>\n        </div>\n    ";
+  var template = "\n        <div class=\"container mx-auto p-4\">\n            <h1>Hacker News</h1>\n            <ul>\n                {{__news_feed__}}\n            </ul>\n            <div>\n                <a href='#/page/{{__prev_page__}}'>\uC774\uC804\uD398\uC774\uC9C0</a>\n                <a href='#/page/{{__next_page__}}'>\uB2E4\uC74C\uD398\uC774\uC9C0</a>\n            </div>\n        </div>\n    ";
   for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
-    newsList.push("\n        <li>\n          <a href=\"#/show/".concat(newsFeed[i].id, "\">\n          ").concat(newsFeed[i].title, "  ").concat(newsFeed[i].comments_count, "\n          </a\n        </li>\n    "));
+    newsList.push("\n            <li>\n            <a href=\"#/show/".concat(newsFeed[i].id, "\">\n            ").concat(newsFeed[i].title, "  ").concat(newsFeed[i].comments_count, "\n            </a\n            </li>\n        "));
   }
   template = template.replace('{{__news_feed__}}', newsList.join(''));
   template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage - 1 : 1);
@@ -144,11 +144,22 @@ function newsFeed() {
 function newsContent() {
   var id = location.hash.substring(7);
   var newsContent = getData(CONTENT_URL.replace('@id', id));
-  container.innerHTML = "\n      <h1>".concat(newsContent.title, "</h1>\n      <div>\n        <a href=\"#/page/").concat(store.currentPage, "\">\uBAA9\uB85D\uC73C\uB85C</a>\n      </div>\n    ");
+  var template = "\n    <h1 class=\"text-red-400\">".concat(newsContent.title, "</h1>\n    <div>\n      ").concat(newsContent.content, "\n    </div>\n    {{__comments__}}\n\n    <div>\n      <a href=\"#/page/").concat(store.currentPage, "\">\uBAA9\uB85D\uC73C\uB85C</a>\n    </div>\n\n  ");
+  function makeComment(comments) {
+    var commentString = [];
+    for (var i = 0; i < comments.length; i++) {
+      commentString.push("\n            <div class=\"text-gray-400>\n              <strong>".concat(comments[i].user, "</strong>").concat(comments[i].time_ago, "\n            </div>\n            <p class=\"text-gray-700>").concat(comments[i].content, "</p>\n            "));
+      if (comments[i].comments.length > 0) {
+        commentString.push(makeComment(comments[i].comments));
+      }
+    }
+    return commentString.join('');
+  }
+  template = template.replace('{{__comments__}}', makeComment(newsContent.comments));
+  container.innerHTML = template;
 }
 function router() {
   var routePath = location.hash;
-  console.log(routePath);
   if (routePath === '') {
     newsFeed();
   } else if (routePath.indexOf('#/page') != -1) {
@@ -190,7 +201,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65428" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50348" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
